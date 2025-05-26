@@ -1,7 +1,9 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.Json;
+using System.Text;
 using System;
+using System.Collections.Generic;
 
 
 public  class Client
@@ -20,11 +22,13 @@ public  class Client
         public string title { get; set; }
         public string body { get; set; }
     }
+
+    //exercise one:
     public async Task fetchPosts(int numPosts)
     {
 
         var response = await client.GetAsync(this.url);
-        //Console.WriteLine("response: " + response);
+        Console.WriteLine("response: " + response.Content.GetType());
         string answer = await response.Content.ReadAsStringAsync();
         //Console.WriteLine("answer: " + answer);
         Post[] posts = JsonSerializer.Deserialize<Post[]>(answer);
@@ -36,11 +40,14 @@ public  class Client
         }
     }
 
-    public async Task postById(int id)
+    //exercise two:
+    public async Task getPostById(int id)
     {
         string newUrl = this.url + "?id=" + id;
-        var response = await client.GetAsync(newUrl);
-        string text = await response.Content.ReadAsStringAsync();
+        //var response = await client.GetAsync(newUrl);
+        //string text = await response.Content.ReadAsStringAsync();
+        string text = await client.GetStringAsync(newUrl);
+        Console.WriteLine(text);
         Post[] posts = JsonSerializer.Deserialize<Post[]>(text);
         if (posts.Length > 0)
         {
@@ -55,4 +62,20 @@ public  class Client
         }
     }
 
+    //exercise three:
+    public async Task PostNew(int userId, string title, string body)
+    {
+        Post newPost = new Post();
+        newPost.userId = userId;
+        newPost.title = title;
+        newPost.body = body;
+
+        string text = JsonSerializer.Serialize(newPost);
+        
+        var content = new StringContent(text, Encoding.UTF8, "application/json");
+        var response = await client.PostAsync(url, content);
+        
+        var responseString = await response.Content.ReadAsStringAsync();
+        Console.WriteLine(responseString);
+    }
 }
